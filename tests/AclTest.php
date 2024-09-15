@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Tobento\Service\Acl\Test\Mock\User;
 use Tobento\Service\Acl\Acl;
 use Tobento\Service\Acl\Role;
+use Tobento\Service\Acl\RolesInterface;
 use Tobento\Service\Acl\Rule;
 
 /**
@@ -44,8 +45,27 @@ class AclTest extends TestCase
                     ->description('If a user can read articles');
         
         $this->assertSame('articles.read', $rule->getKey());
+        $this->assertSame('default', $rule->getArea());
         $this->assertSame('Article Read', $rule->getTitle());
         $this->assertSame('If a user can read articles', $rule->getDescription());
+    }
+    
+    public function testAddingRuleWithDefaultRuleArea()
+    {
+        $acl = new Acl();
+        $rule = $acl->rule('articles.read');
+        
+        $this->assertSame('default', $rule->getArea());
+        
+        $acl->setDefaultRuleArea('frontend');
+        
+        $rule = $acl->rule('articles.write');
+        
+        $this->assertSame('frontend', $rule->getArea());
+        
+        $rule = $acl->rule('articles.write')->area('backend');
+        
+        $this->assertSame('backend', $rule->getArea());
     }
 
     public function testAddRule()
@@ -68,7 +88,7 @@ class AclTest extends TestCase
         
         $acl->setRoles([$guest, $editor]);
         
-        $roles = $acl->getRoles('frontend');
+        $roles = $acl->getRoles('default');
         
         $this->assertSame([], $acl->getRoles('backend'));
         $this->assertTrue($acl->hasRole('guest'));
@@ -99,6 +119,12 @@ class AclTest extends TestCase
         $this->assertSame($editor, $apiRoles['editor']);
         $this->assertSame($guest, $acl->getRole('guest'));
         $this->assertSame($editor, $acl->getRole('editor'));
+    }
+    
+    public function testRolesMethod()
+    {
+        $acl = new Acl();
+        $this->assertInstanceof(RolesInterface::class, $acl->roles());
     }
     
     public function testPermissionsFailsIfCurrentUserIsNotSet()
@@ -227,10 +253,10 @@ class AclTest extends TestCase
         
         $acl->addPermissions(['articles.read', 'articles.create']);
         
-        $user = (new User('Nick'))->setRole(new Role('editor', ['frontend']));
+        $user = (new User('Nick'))->setRole(new Role('editor', ['default']));
         $acl->setCurrentUser($user);
         
-        $tom = (new User('Tom'))->setRole(new Role('editor', ['frontend']));
+        $tom = (new User('Tom'))->setRole(new Role('editor', ['default']));
         $tom->addPermissions(['articles.read', 'articles.create']);
         
         $this->assertTrue($acl->can('articles.read|articles.create'));
