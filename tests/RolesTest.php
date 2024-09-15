@@ -28,6 +28,31 @@ class RolesTest extends TestCase
             new Roles()
         );
     }
+
+    public function testAddMethod()
+    {
+        $roles = new Roles();
+        $editor = new Role('editor');
+        $rolesNew = $roles->add($editor);
+        
+        $this->assertFalse($roles === $rolesNew);
+        
+        $this->assertSame($editor, $rolesNew->get('editor'));
+    }
+    
+    public function testRemoveMethod()
+    {
+        $roles = new Roles(
+            new Role('editor'),
+            new Role('guest'),
+        );
+        
+        $rolesNew = $roles->remove('editor');
+        
+        $this->assertFalse($roles === $rolesNew);
+        
+        $this->assertSame(1, count($rolesNew->all()));
+    }
     
     public function testSortMethod()
     {
