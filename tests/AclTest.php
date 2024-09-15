@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Tobento\Service\Acl\Test\Mock\User;
 use Tobento\Service\Acl\Acl;
 use Tobento\Service\Acl\Role;
+use Tobento\Service\Acl\Roles;
 use Tobento\Service\Acl\RolesInterface;
 use Tobento\Service\Acl\Rule;
 
@@ -77,6 +78,26 @@ class AclTest extends TestCase
         $acl->addRule($rule);
         
         $this->assertSame($rule, $acl->getRules()['articles.read']);
+    }
+    
+    public function testSetRoles()
+    {
+        $acl = new Acl();
+        
+        $guest = new Role('guest');
+        $editor = new Role('editor');
+        
+        $acl->setRoles(new Roles($guest, $editor));
+        
+        $roles = $acl->getRoles('default');
+        
+        $this->assertSame([], $acl->getRoles('backend'));
+        $this->assertTrue($acl->hasRole('guest'));
+        $this->assertFalse($acl->hasRole('admin'));
+        $this->assertSame($guest, $roles['guest']);
+        $this->assertSame($editor, $roles['editor']);
+        $this->assertSame($guest, $acl->getRole('guest'));
+        $this->assertSame($editor, $acl->getRole('editor'));
     }
 
     public function testSetRolesWithDefaultArea()
