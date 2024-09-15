@@ -80,10 +80,10 @@ interface AclInterface extends Permissionable
     /**
      * Sets the roles.
      *
-     * @param array<array-key, RoleInterface> $roles
+     * @param RolesInterface|array<array-key, RoleInterface> $roles
      * @return static $this
      */
-    public function setRoles(array $roles): static;
+    public function setRoles(RolesInterface|array $roles): static;
     
     /**
      * Gets the roles.
