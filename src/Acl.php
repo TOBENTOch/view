@@ -22,29 +22,33 @@ class Acl implements AclInterface
     
     /**
      * @var null|Authorizable
-     */    
+     */
     protected ?Authorizable $currentUser = null;
+
+    /**
+     * @var string
+     */
+    protected string $defaultRuleArea = 'default';
     
     /**
      * @var array The rules.
-     */    
+     */
     protected array $rules = [];
     
     /**
-     * @var array The roles. ['frontend' => RoleInterface]
-     */    
-    protected array $roles = []; 
-
+     * @var null|RolesInterface
+     */
+    protected null|RolesInterface $roles = null;
+    
     /**
      * Set the current user.
      *
      * @param Authorizable $user
      * @return static $this
-     */    
+     */
     public function setCurrentUser(Authorizable $user): static
     {
         $this->currentUser = $user;
-        
         return $this;
     }
  
@@ -52,24 +56,35 @@ class Acl implements AclInterface
      * Get the current user.
      *
      * @return null|Authorizable
-     */    
+     */
     public function getCurrentUser(): ?Authorizable
     {
         return $this->currentUser;
-    } 
+    }
+    
+    /**
+     * Set the default rule area.
+     *
+     * @param string $area
+     * @return static $this
+     */
+    public function setDefaultRuleArea(string $area): static
+    {
+        $this->defaultRuleArea = $area;
+        return $this;
+    }
 
     /**
      * Create and adds a new Rule.
      *
      * @param string $key A rule key
      * @return Rule
-     */    
+     */
     public function rule(string $key): Rule
     {
         $rule = new Rule($key);
-        
+        $rule->area($this->defaultRuleArea);
         $this->addRule($rule);
-        
         return $rule;
     }
     
@@ -78,11 +93,10 @@ class Acl implements AclInterface
      *
      * @param RuleInterface $rule
      * @return static $this
-     */    
+     */
     public function addRule(RuleInterface $rule): static
     {
         $this->rules[$rule->getKey()] = $rule;
-        
         return $this;
     }
 
@@ -93,18 +107,15 @@ class Acl implements AclInterface
      * @param array $parameters Any parameters for custom handler
      * @param null|Authorizable $user If null current user is taken.
      * @return bool True on success, false on failure.
-     */    
+     */
     public function can(string $key, array $parameters = [], ?Authorizable $user = null): bool
     {        
-        if (! str_contains($key, '|'))
-        {
+        if (! str_contains($key, '|')) {
             return (bool) $this->getRule($key)?->matches($this, $key, $parameters, $user);
         }
         
-        foreach(explode('|', $key) as $key)
-        {
-            if ($this->can($key, $parameters[$key] ?? [], $user) === false)
-            {
+        foreach(explode('|', $key) as $key) {
+            if ($this->can($key, $parameters[$key] ?? [], $user) === false) {
                 return false;
             }
         }
@@ -119,7 +130,7 @@ class Acl implements AclInterface
      * @param array $parameters Any parameters for custom handler
      * @param null|Authorizable $user If null current user is taken.
      * @return bool True no permission, false has permission.
-     */    
+     */
     public function cant(string $key, array $parameters = [], ?Authorizable $user = null): bool
     {
         return ! $this->can($key, $parameters, $user);
@@ -128,20 +139,12 @@ class Acl implements AclInterface
     /**
      * Sets the roles.
      *
-     * @param array $roles The roles [RoleInterface, ...]
+     * @param array<array-key, RoleInterface> $roles
      * @return static $this
-     */    
+     */
     public function setRoles(array $roles): static
     {
-        foreach($roles as $role)
-        {
-            if (! $role instanceof RoleInterface) {
-                continue;
-            }
-            
-            $this->roles[$role->key()] = $role;
-        }
-        
+        $this->roles = new Roles(...$roles);
         return $this;
     }
     
@@ -149,15 +152,25 @@ class Acl implements AclInterface
      * Gets the roles.
      *
      * @param null|string $area An area key such as 'frontend' or null to get all roles.
-     * @return array
-     */    
+     * @return array<string, RoleInterface>
+     */
     public function getRoles(?string $area = null): array
     {
         if (is_null($area)) {
-            return $this->roles;
+            return $this->roles()->all();
         }
         
-        return array_filter($this->roles, fn($role) => in_array($area, $role->areas()));
+        return $this->roles()->area($area)->all();
+    }
+    
+    /**
+     * Gets the roles.
+     *
+     * @return RolesInterface
+     */
+    public function roles(): RolesInterface
+    {
+        return $this->roles ?: new Roles();
     }
 
     /**
@@ -165,10 +178,10 @@ class Acl implements AclInterface
      *
      * @param string $key The role key such as 'frontend'.
      * @return null|RoleInterface
-     */    
+     */
     public function getRole(string $key): ?RoleInterface
     {
-        return $this->roles[$key] ?? null;
+        return $this->roles()->get($key);
     }
 
     /**
@@ -176,28 +189,28 @@ class Acl implements AclInterface
      *
      * @param string $key The role key such as 'frontend'.
      * @return bool If role exists.
-     */    
+     */
     public function hasRole(string $key): bool
     {
-        return isset($this->roles[$key]);
+        return $this->roles()->has($key);
     }
         
     /**
      * Gets the rules.
      *
      * @return array The rules
-     */    
+     */
     public function getRules(): array
     {
         return $this->rules;
-    }  
+    }
     
     /**
      * Gets a rule or null
      *
      * @param string $ruleKey The rule key. 'user.create'
      * @return null|RuleInterface Null if rule does not exist.
-     */    
+     */
     public function getRule(string $ruleKey): ?RuleInterface
     {
         return $this->rules[$ruleKey] ?? null;
