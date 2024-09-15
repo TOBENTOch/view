@@ -598,6 +598,7 @@ Working with roles.
 use Tobento\Service\Acl\Acl;
 use Tobento\Service\Acl\Role;
 use Tobento\Service\Acl\RoleInterface;
+use Tobento\Service\Acl\RolesInterface;
 
 // Create Acl.
 $acl = new Acl();
@@ -609,22 +610,57 @@ $acl->setRoles([
     new Role('editor'),
 ]);
 
-// Get roles.
-foreach($acl->getRoles() as $role)
-{
+// Get roles:
+$roles = $acl->roles();
+
+var_dump($roles instanceof RolesInterface);
+// bool(true)
+
+// Iterate roles:
+foreach($acl->roles() as $role) {
     $key = $role->key();
     $active = $role->active();
     $areas = $role->areas();
     $name = $role->name();
 }
 
-// Get Specific role.
-$role = $acl->getRole('editor');
+// Get Specific role:
+$role = $roles->get('editor');
+$role = $acl->getRole('editor'); // or
+// null|RoleInterface
 
-// Check if role exists.
-if ($acl->hasRole('editor')) {
-    // editor role exists.
-}
+// Check if role exists:
+var_dump($roles->has('editor'));
+var_dump($acl->hasRole('editor')); // or
+// bool(true)
+
+// Sort roles returning a new instance:
+$roles = $roles->sort(fn(RoleInterface $a, RoleInterface $b): int => $a->name() <=> $b->name());
+
+// Filter roles returning a new instance:
+$roles = $roles->filter(fn(RoleInterface $role): bool => $role->active());
+
+// Filter by area roles returning a new instance:
+$roles = $roles->area('frontend');
+
+// Filter (in)active roles returning a new instance:
+$roles = $roles->active();
+$roles = $roles->active(false);
+
+// Returns a new instance only the roles specified:
+$roles = $roles->only(['editor']);
+
+// Returns a new instance except the roles specified:
+$roles = $roles->except(['editor']);
+
+// Get first role:
+$role = $roles->first();
+// null|RoleInterface
+
+// Get all roles:
+$roles = $roles->all();
+$roles = $acl->getRoles(); // or
+// array<string, RoleInterface>
 ```
 
 # Credits
