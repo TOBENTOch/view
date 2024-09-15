@@ -38,7 +38,7 @@ class Rule implements RuleInterface
     /**
      * @var string The area key.
      */    
-    protected string $area = 'frontend';    
+    protected string $area = 'default';
 
     /**
      * @var bool If the rule needs permission given.
@@ -136,19 +136,14 @@ class Rule implements RuleInterface
         string $key,
         array $parameters = [],
         ?Authorizable $user = null
-    ): bool    {
-        
-        if (!is_null($user))
-        {
+    ): bool {
+        if (!is_null($user)) {
             $permissions = $this->collectPermissions($user, $acl);
-        } 
-        else
-        {
+        } else {
             $user = $acl->getCurrentUser();
             
             // if no user at all, rule does not match.
-            if (is_null($user))
-            {
+            if (is_null($user)) {
                 return false;
             }
             
@@ -167,22 +162,19 @@ class Rule implements RuleInterface
         }
         
         // check if permission is given.
-        if ($this->requiresPermission())
-        {
+        if ($this->requiresPermission()) {
             // area check
             if (!in_array($this->getArea(), $user->role()->areas())) {
                 return false;
             }
             
             // permission check
-            if (!in_array($key, $permissions))
-            {
+            if (!in_array($key, $permissions)) {
                 return false;
             }
         }
         
-        if ($this->handler)
-        {
+        if ($this->handler) {
             return $this->callRuleHandler($parameters, $user);
         }
         
@@ -257,19 +249,16 @@ class Rule implements RuleInterface
     protected function collectPermissions(Authorizable $user, AclInterface $acl): array
     {
         // check if user has its own permissions.
-        if ($user->hasPermissions())
-        {
+        if ($user->hasPermissions()) {
             return $user->getPermissions();
         }
         
-        if (! $user->hasRole())
-        {
+        if (! $user->hasRole()) {
             return [];
         }
         
         // get permissions from role here, as user might have changed role permissions.
-        if ($acl->hasRole($user->role()->key()))
-        {        
+        if ($acl->hasRole($user->role()->key())) {
             return $acl->getRole($user->role()->key())->getPermissions();
         }
         
@@ -286,7 +275,6 @@ class Rule implements RuleInterface
     protected function callRuleHandler(array $parameters, Authorizable $user): bool
     {
         if (is_callable($this->handler)) {
-            
             try {
                 array_unshift($parameters, $user);
                 $response = call_user_func_array($this->handler, $parameters);
