@@ -23,22 +23,30 @@ interface AclInterface extends Permissionable
      *
      * @param Authorizable $user
      * @return static $this
-     */    
+     */
     public function setCurrentUser(Authorizable $user): static;
     
     /**
      * Get the current user.
      *
      * @return null|Authorizable
-     */    
+     */
     public function getCurrentUser(): ?Authorizable;    
 
+    /**
+     * Set the default rule area.
+     *
+     * @param string $area
+     * @return static $this
+     */
+    public function setDefaultRuleArea(string $area): static;
+    
     /**
      * Create and adds a new Rule.
      *
      * @param string $key A rule key
      * @return Rule
-     */    
+     */
     public function rule(string $key): Rule;
         
     /**
@@ -46,7 +54,7 @@ interface AclInterface extends Permissionable
      *
      * @param RuleInterface $rule
      * @return static $this
-     */    
+     */
     public function addRule(RuleInterface $rule): static;
 
     /**
@@ -56,7 +64,7 @@ interface AclInterface extends Permissionable
      * @param array $parameters Any parameters for custom handler
      * @param null|Authorizable $user If null current user is taken.
      * @return bool True on success, false on failure.
-     */    
+     */
     public function can(string $key, array $parameters = [], ?Authorizable $user = null): bool;
 
     /**
@@ -66,31 +74,38 @@ interface AclInterface extends Permissionable
      * @param array $parameters Any parameters for custom handler
      * @param null|Authorizable $user If null current user is taken.
      * @return bool True no permission, false has permission.
-     */    
+     */
     public function cant(string $key, array $parameters = [], ?Authorizable $user = null): bool;
 
     /**
      * Sets the roles.
      *
-     * @param array $roles The roles [RoleInterface, ...]
+     * @param array<array-key, RoleInterface> $roles
      * @return static $this
-     */    
+     */
     public function setRoles(array $roles): static;
     
     /**
      * Gets the roles.
      *
      * @param null|string $area An area key such as 'frontend' or null to get all roles.
-     * @return array
-     */    
+     * @return array<string, RoleInterface>
+     */
     public function getRoles(?string $area = null): array;
+    
+    /**
+     * Gets the roles.
+     *
+     * @return RolesInterface
+     */
+    public function roles(): RolesInterface;
 
     /**
      * Gets the role by key.
      *
      * @param string $key The role key such as 'frontend'.
      * @return null|RoleInterface
-     */    
+     */
     public function getRole(string $key): ?RoleInterface;
 
     /**
@@ -98,14 +113,14 @@ interface AclInterface extends Permissionable
      *
      * @param string $key The role key such as 'frontend'.
      * @return bool If role exists.
-     */    
+     */
     public function hasRole(string $key): bool;
         
     /**
      * Gets the rules.
      *
      * @return array The rules
-     */    
+     */
     public function getRules(): array;
 
     /**
@@ -113,6 +128,6 @@ interface AclInterface extends Permissionable
      *
      * @param string $ruleKey The rule key. 'user.create'
      * @return null|RuleInterface Null if rule does not exist.
-     */    
+     */
     public function getRule(string $ruleKey): ?RuleInterface;    
 }
