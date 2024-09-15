@@ -598,17 +598,22 @@ Working with roles.
 use Tobento\Service\Acl\Acl;
 use Tobento\Service\Acl\Role;
 use Tobento\Service\Acl\RoleInterface;
+use Tobento\Service\Acl\Roles;
 use Tobento\Service\Acl\RolesInterface;
 
 // Create Acl.
 $acl = new Acl();
 
 // Set roles on acl for later reusage if needed.
-// Role must implement RoleInterface, otherwise it is ignored.
 $acl->setRoles([
     new Role('guest'),
     new Role('editor'),
 ]);
+// or
+$acl->setRoles(new Roles(
+    new Role('guest'),
+    new Role('editor'),
+));
 
 // Get roles:
 $roles = $acl->roles();
@@ -652,6 +657,12 @@ $roles = $roles->only(['editor']);
 
 // Returns a new instance except the roles specified:
 $roles = $roles->except(['editor']);
+
+// Add a role returning a new instance:
+$roles = $roles->add(new Role('admin'));
+
+// Remove a role returning a new instance:
+$roles = $roles->remove('editor');
 
 // Get first role:
 $role = $roles->first();
