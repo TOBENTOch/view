@@ -30,7 +30,7 @@ class Role implements RoleInterface
      */    
     public function __construct(
         protected string $key,
-        protected array $areas = ['frontend'],
+        protected array $areas = ['default'],
         protected bool $active = true,
         protected null|string $name = null,
     ) {}
