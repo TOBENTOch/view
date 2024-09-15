@@ -21,6 +21,22 @@ use IteratorAggregate;
 interface RolesInterface extends IteratorAggregate
 {
     /**
+     * Add a new role returning a new instance.
+     *
+     * @param RoleInterface $role
+     * @return static
+     */
+    public function add(RoleInterface $role): static;
+    
+    /**
+     * Remove a role returning a new instance.
+     *
+     * @param string $role
+     * @return static
+     */
+    public function remove(string $role): static;
+    
+    /**
      * Returns a new instance with the roles sorted.
      *
      * @param callable $callback

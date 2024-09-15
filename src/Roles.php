@@ -38,6 +38,32 @@ class Roles implements RolesInterface
             $this->roles[$role->key()] = $role;
         }
     }
+
+    /**
+     * Add a new role returning a new instance.
+     *
+     * @param RoleInterface $role
+     * @return static
+     */
+    public function add(RoleInterface $role): static
+    {
+        $new = clone $this;
+        $new->roles[$role->key()] = $role;
+        return $new;
+    }
+    
+    /**
+     * Remove a role returning a new instance.
+     *
+     * @param string $role
+     * @return static
+     */
+    public function remove(string $role): static
+    {
+        $new = clone $this;
+        unset($new->roles[$role]);
+        return $new;
+    }
     
     /**
      * Returns a new instance with the roles sorted.
